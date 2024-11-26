@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import time
 # Base URLs for the microservices
-USER_SERVICE_URL = "http://<user-service-url>"
+USER_SERVICE_URL = "http://localhost:8000"
 TASK_SERVICE_URL = "http://<task-service-url>"
 # Initialize session state variables
 if "username_input" not in st.session_state:
@@ -26,10 +26,12 @@ def login_user(username, password):
     return  {"token": "123456"}
 
 def get_tasks(token):
-    headers = {"Authorization": f"Token {token}"}
+    token = 1
+    #headers = {"Authorization": f"Token {token}"}
+
     #response = requests.get(f"{TASK_SERVICE_URL}/tasks/", headers=headers)
-    #eturn response.json()
-    return [{"id": 1, "title": "Task 1"}, {"id": 2, "title": "Task 2"}]
+    response = requests.get(f"{TASK_SERVICE_URL}/tasks/{token}")
+    return response.json()
 
 def create_task(token, title):
     headers = {"Authorization": f"Token {token}"}
@@ -78,9 +80,9 @@ if st.session_state.token is None:
         if st.sidebar.button("Register",key="register_button"):
             response = register_user(username, password)
             if "username" in response:
-                st.success("Registration successful! Please log in.",key="register_success")
+                st.success("Registration successful! Please log in.")
             else:
-                st.error("Registration failed",key="register_error")
+                st.error("Registration failed")
 
 else:
     st.sidebar.title("Logout")

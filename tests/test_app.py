@@ -14,7 +14,7 @@ def logout(app_test:AppTest):
     app_test.sidebar.button(key="logout_button").click().run()
 def test_login_labels():
     "A user opens the app and sees the login form."
-    app_test = AppTest.from_file("frontend/app.py").run()
+    app_test = AppTest.from_file("frontend/src/app.py").run()
     assert app_test.sidebar.selectbox(key="login_register").label == "Choose Action"
     app_test.sidebar.selectbox(key="login_register").select("Login").run()
     assert app_test.sidebar.text_input(key="username_input").label == "Username"
@@ -24,7 +24,7 @@ def test_login_labels():
 def test_login():
     "A user writes their username and password and clicks the login button. They then logout."
 
-    app_test =AppTest.from_file("frontend/app.py").run()
+    app_test =AppTest.from_file("frontend/src/app.py").run()
 
     login(app_test)
     assert app_test.sidebar.button(key="login_button").value == True

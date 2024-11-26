@@ -1,2 +1,5 @@
 
 venv/
+Build_Something.egg-info/
+tests/__pycache__/
+*__pycache__/
