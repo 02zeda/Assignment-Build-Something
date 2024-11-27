@@ -1,23 +1,38 @@
 from fastapi import FastAPI , HTTPException, Request
 from pydantic import BaseModel
 import psycopg2
-
+import time
 class Task(BaseModel):
     title: str
     user_id: int
-connection = psycopg2.connect(
-    database="task_service_db",
-    host = "localhost",
-    user = "postgres",
-    password = "password",
-    port = "5432")
-
-
+timeout = 5
+start_time = time.time()
+passed_time = 0
+is_connected = False
 def setup(connection):
     cursor = connection.cursor()
     cursor.execute("CREATE TABLE IF NOT EXISTS tasks (id SERIAL PRIMARY KEY, title TEXT, user_id INT)")
     connection.commit()
     cursor.close()
+while not is_connected:
+    try:
+        connection = psycopg2.connect(
+            database="task_service_db",
+            host = "postgres",
+            user = "postgres",
+            password = "password",
+            port = "5432")
+        print("Connected to the database")
+        setup(connection)
+        is_connected = True
+    except:
+        time.sleep(2)
+        passed_time += time.time() -start_time
+        print(f"Connection failed. Retrying in 2 seconds. Time passed: {passed_time}")
+        continue
+
+
+
 def create_task(title:str, user_id:int,connection):
     try:
         cursor = connection.cursor()
@@ -40,7 +55,7 @@ def delete_task(task_id:int,connection):
     return True
 def delete_all_tasks(connection):
     cursor = connection.cursor()
-    cursor.execute("DELETE FROM tasks")
+    cursor.execute("DELETE * FROM tasks")
     connection.commit()
     cursor.close()
 def get_tasks(user_id:int,connection):
@@ -50,7 +65,8 @@ def get_tasks(user_id:int,connection):
         tasks = cursor.fetchall()
         cursor.close()
         tasks = [{"id": task[0], "title": task[1]} for task in tasks]
-        tasks.append({"id": 1, "title": "Task 1"})
+        #tasks.append({"id": 1, "title": "Task 1"})
+
         return tasks
     except:
         cursor.close()
@@ -59,7 +75,9 @@ def get_tasks(user_id:int,connection):
 app = FastAPI()
 @app.get("/tasks/{user_id:int}")
 async def get_user_tasks(user_id:int):
-    return get_tasks(user_id,connection)
+    tasks =get_tasks(user_id,connection)
+    print("Getting tasks, Good luck!")
+    return tasks
 @app.post("/tasks/")
 async def create_user_task(task:Task):
     if create_task(task.title,task.user_id,connection):
@@ -72,6 +90,7 @@ async def delete_user_task(task_id:int):
         return {"message": "Task deleted"}
     else:
         raise HTTPException(status_code=404, detail="Task not found")
+
 
 
 

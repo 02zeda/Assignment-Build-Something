@@ -1,6 +1,6 @@
 import pytest
 import psycopg2
-from task_service.src.task_service import setup, create_task, delete_task, get_tasks,delete_all_tasks
+from task_service.src.task_service.task_service import setup, create_task, delete_task, get_tasks,delete_all_tasks
 
 @pytest.fixture(scope="module")
 def connection():

@@ -1,0 +1,46 @@
+
+services:
+  app:
+    image: streamlit-frontend:frontend
+    container_name: frontend
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./frontend/src:/app
+  task-service:
+    image: fastapi-service:latest
+    container_name: task-service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./task_service/src/task_service/:/app/
+    entrypoint: "uvicorn"
+    command: "task_service:app --host 0.0.0.0 --port 5000 --reload"
+
+  user-service:
+    image: fastapi-service:latest
+    container_name: user-service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - postgres
+    volumes:
+      - ./user_service/src/user_service/:/app/
+    entrypoint: "uvicorn"
+    command: "user_service:app --host 0.0.0.0 --port 5001 --reload"
+  postgres:
+    image: postgres-db:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    command: postgres
+
+volumes:
+  postgres-data:
